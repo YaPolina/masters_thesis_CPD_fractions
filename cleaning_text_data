@@ -1,0 +1,53 @@
+import os
+import re
+import numpy as np
+import string
+
+from bs4 import BeautifulSoup
+from pymystem3 import Mystem
+
+
+with open('rus_stopwords.txt', 'r', encoding='utf-8') as f:
+    stop_words = f.readlines()
+    cleared_stop_words = [word.strip() for word in stop_words]
+    
+with open('Первый Съезд.txt', 'r', encoding='utf-8') as f:
+    lines = f.readlines()
+    
+def remove_stopwords(line):
+    return ' '.join([word for word in line.split() if ((word not in cleared_stop_words) and (len(word)>3))]).lower()    
+
+author = ""
+for line in lines:
+    if 'BOLD' in line:
+        author = line.strip()
+    else:
+        pretty_speech = remove_stopwords(line)
+        if(len(pretty_speech)>0):
+            new_div = soup.new_tag('div')
+            author_tag = soup.new_tag('author') 
+            author_tag.string = author.replace('BOLD','').strip()
+
+            speech_tag = soup.new_tag('p')
+            speech_tag.string = pretty_speech
+            
+            new_div.append(author_tag)
+            new_div.append(speech_tag)
+            
+            soup_root.append(new_div)
+            
+
+def lemmatize(line):
+    return ''.join(mystem.lemmatize(line)).strip()
+
+punctuations = str.maketrans(dict.fromkeys(string.punctuation))
+mystem = Mystem()
+
+for index, speech in enumerate(soup.find_all('p')):
+    speech.string = speech.string.translate(punctuations).strip()
+    speech.string = ' '.join([word for word in speech.string.split() if ((word not in cleared_stop_words) and (len(word)>3))])
+    speech.string = lemmatize(speech.string) 
+
+
+with open ('Первый Съезд_lemmas_lower_without_stops.html', 'w', encoding = 'utf-8') as html_file:
+    html_file.write(str(soup))

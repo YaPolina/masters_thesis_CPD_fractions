@@ -1,0 +1,32 @@
+import fitz
+import re
+
+def clean_line(line):
+    cleaned = line
+    cleaned = cleaned.replace('\xad', '')
+    cleaned = cleaned.replace('\u00ad', '')
+    cleaned = cleaned.replace('\N{SOFT HYPHEN}', '')
+    return cleaned
+
+text = ""
+path = textpath
+
+doc = fitz.open(path)
+
+text = ''
+with open('file.txt','w', encoding='utf-8') as fd:  
+    for page in doc:
+        fancy_page = page.get_textpage().extractDICT()
+        for block in fancy_page['blocks']:
+            for line in block['lines']:
+                for span in line['spans']:
+                    if('Bold' in span['font']):
+                        print(text, file=fd)
+                        print('BOLD\t\t' + clean_line(span['text']), file=fd)
+                        text = ''
+                    else:
+                        cleaned = clean_line(span['text'])
+                        if(cleaned == ''):
+                            continue
+                        text = text + cleaned
+    print(text,file=fd)      
